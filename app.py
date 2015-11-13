@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os.path
 import tornado.ioloop
 import tornado.web
 import tornado.wsgi
@@ -9,7 +10,7 @@ import tornado.wsgi
 class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
-        self.write("Hello, world")
+        self.render("index.html")
 
 
 class APIHandler(tornado.web.RequestHandler):
@@ -46,7 +47,13 @@ class VideosHandler(tornado.web.RequestHandler):
         self.write(json.dumps({"k1": url, "k2": [{"k": 1}, {"k2": "s"}]}))
 
 
-settings = {"debug": True}
+settings = {
+    "static_path": os.path.join(os.path.dirname(__file__), "public"),
+    "template_path": os.path.join(os.path.dirname(__file__), "views"),
+    "gzip": True,
+    "debug": True
+}
+
 application = tornado.web.Application([
     (r"/", MainHandler),
     (r"/api/v1", APIHandler),
