@@ -74,6 +74,9 @@ class DetailInfoHtmlParser(HTMLParser.HTMLParser):
         elif self.is_tag_start(tag, attrs, "ul", "class", "other"):
             self.current_key["name"] = "source"
             self.current_key["deep"] = 1
+        elif self.is_tag_start(tag, attrs, "div", "class", "source  source_one"):
+            self.current_key["name"] = "source_one"
+            self.current_key["deep"] = 1
         elif self.is_tag_start(tag, attrs, "div", "class", "rating"):
             self.current_key["name"] = "rating"
             self.current_key["deep"] = 1
@@ -94,6 +97,22 @@ class DetailInfoHtmlParser(HTMLParser.HTMLParser):
             if href != "" and site != "":
                 self.attr_url_name = True
                 self.current_url = {"url": href, "site": site}
+        elif self.current_key["name"] == "source_one" and self.current_key["deep"] > 1:
+            site = self.get_attr_by(tag, attrs, "div", "name")
+            title = self.get_attr_by(tag, attrs, "div", "title")
+            src = self.get_attr_by(tag, attrs, "label", "_src")
+            status = self.get_attr_by(tag, attrs, "input", "title")
+            if site != "":
+                self.current_source["site"] = site
+            if title != "":
+                self.current_source["title"] = title
+            if status != "":
+                self.current_source["status"] = status
+            if src != "":
+                self.current_source["icon"] = src
+                self.add_sources(self.current_source, self.urls)
+                self.current_source = {}
+
         elif self.current_key["name"] == "source" and self.current_key["deep"] > 1:
             site = self.get_attr_by(tag, attrs, "li", "name")
             title = self.get_attr_by(tag, attrs, "img", "title")
@@ -128,7 +147,7 @@ class DetailInfoHtmlParser(HTMLParser.HTMLParser):
         elif self.current_key["deep"] >= 1 and self.current_key["name"] == "base_what":
             self.detail["sum"] = data.strip()
         elif self.current_key["deep"] > 1 and self.current_key["name"] == "long":
-            if data.strip() == "/":
+            if data.strip() == "/" or data.strip() == "":
                 return
             if self.detail.get("actors", None):
                 self.detail["actors"].append(data)
@@ -259,6 +278,17 @@ class TeleplayListHandler(tornado.web.RequestHandler):
         self.write(json.dumps({"err":0, "msg":"", "data":parser.output()}))
 
 
+class AnimeListHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        r = requests.get("http://www.soku.com/channel/animelist_0_0_0_1_"+str(self.get_query_argument("page",1))+".html")
+        parser = TeleListHtmlParser()
+        parser.feed(r.text)
+        parser.close()
+        self.set_header('Content-Type', 'application/json')
+        self.write(json.dumps({"err":0, "msg":"", "data":parser.output()}))
+
+
 class DetailHandler(tornado.web.RequestHandler):
 
     def get(self, detail):
@@ -296,7 +326,8 @@ application = tornado.web.Application([
     (r"/api/v1/videos/(.*)", VideosHandler),
     (r"/api/v1/search", SearchHandler),
     (r"/api/v1/detail/show/(.*)", DetailHandler),
-    (r"/api/v1/channel/teleplaylist", TeleplayListHandler)
+    (r"/api/v1/channel/teleplaylist", TeleplayListHandler),
+    (r"/api/v1/channel/animelist", AnimeListHandler)
 ], **settings)
 
 app = tornado.wsgi.WSGIAdapter(application)
