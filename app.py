@@ -363,7 +363,9 @@ class TeleplayListHandler(tornado.web.RequestHandler):
         parser.feed(r.text)
         parser.close()
         self.set_header('Content-Type', 'application/json')
-        self.write(json.dumps({"err":0, "msg":"", "data":parser.output()}))
+        response_str = json.dumps({"err":0, "msg":"", "data":parser.output()})
+        self.set_header("Content-Length", str(len(response_str)))
+        self.write(response_str)
 
 
 class AnimeListHandler(tornado.web.RequestHandler):
@@ -374,7 +376,9 @@ class AnimeListHandler(tornado.web.RequestHandler):
         parser.feed(r.text)
         parser.close()
         self.set_header('Content-Type', 'application/json')
-        self.write(json.dumps({"err":0, "msg":"", "data":parser.output()}))
+        response_str = json.dumps({"err":0, "msg":"", "data":parser.output()})
+        self.set_header("Content-Length", str(len(response_str)))
+        self.write(response_str)
 
 
 class DetailHandler(tornado.web.RequestHandler):
@@ -385,7 +389,9 @@ class DetailHandler(tornado.web.RequestHandler):
         parser.feed(r.text)
         parser.close()
         self.set_header('Content-Type', 'application/json')
-        self.write(json.dumps({"err":0, "msg":"", "data":parser.output()}))
+        response_str = json.dumps({"err":0, "msg":"", "data":parser.output()})
+        self.set_header("Content-Length", str(len(response_str)))
+        self.write(response_str)
 
 class VideosHandler(tornado.web.RequestHandler):
     '''Extract videos api
@@ -401,7 +407,9 @@ class VideosHandler(tornado.web.RequestHandler):
         quality = self.get_query_argument("quality", None)
         self.set_header('Content-Type', 'application/json')
         sohu = SohuExtractor(origin_url)
-        self.write(json.dumps({"err":0, "msg":"", "data":sohu.extract(meta, quality)}))
+        response_str = json.dumps({"err":0, "msg":"", "data":sohu.extract(meta, quality)})
+        self.set_header("Content-Length", str(len(response_str)))
+        self.write(response_str)
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "public"),
