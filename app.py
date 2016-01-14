@@ -403,7 +403,7 @@ class VideosHandler(tornado.web.RequestHandler):
 
     def get(self, url):
         origin_url = base64.b64decode(url.split('/')[0])
-        meta = self.get_query_argument("meta", 0)
+        meta = int(self.get_query_argument("meta", "0"))
         quality = self.get_query_argument("quality", None)
         self.set_header('Content-Type', 'application/json')
         sohu = SohuExtractor(origin_url)
